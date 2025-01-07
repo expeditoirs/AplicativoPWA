@@ -1,0 +1,96 @@
+<html lang="en">
+
+<head>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta charset="UTF-8" />
+    <meta content='yes' name='apple-mobile-web-app-capable' />
+    <meta content='yes' name='mobile-web-app-capable' />
+    <meta name="apple-mobile-web-app-status-bar" content="#aa7700">
+    <meta name="theme-color" content="black">
+    <link rel="apple-touch-icon" href="assets/logos/icon-192x192-apple.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Aplicativo PWA</title>
+</head>
+
+<body>
+    <div class="titulo">
+        <h1>Titulo da aplicação</h1>
+        <p>Autor: Expedito Iam</p>
+        <p>Conteúdo</p>
+    </div>
+    <div id="installModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; background: white; padding: 20px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); z-index: 1000; border-radius: 10px; text-align: center;">
+        <p>Desenvolvemos nosso aplicativo. Deseja instalar o aplicativo?</p>
+        <button id="confirmInstall" style="margin-right: 10px; padding: 10px 20px; background: green; color: white; border: none; border-radius: 5px; cursor: pointer;">Instalar</button>
+        <button id="cancelInstall" style="padding: 10px 20px; background: red; color: white; border: none; border-radius: 5px; cursor: pointer;">Cancelar</button>
+    </div> 
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        $(document).ready(function () {
+            let deferredPrompt;
+    
+            // Verifica se o navegador suporta Service Workers
+            if ('serviceWorker' in navigator) {
+                console.log('Service Worker suportado');
+                $(window).on('load', function () {
+                    navigator.serviceWorker.register('serviceWorker.js')
+                        .then((registration) => {
+                            console.log('Service Worker registrado:', registration);
+                        })
+                        .catch((err) => {
+                            console.error('Erro ao registrar o Service Worker:', err);
+                        });
+                });
+            } else {
+                console.log('Seu navegador não suporta Service Workers');
+            }
+    
+            // Captura o evento beforeinstallprompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault(); // Impede o prompt automático
+                console.log('Evento beforeinstallprompt disparado');
+    
+                deferredPrompt = e; // Armazena o evento
+                $('#overlay, #installModal').fadeIn(); // Exibe o modal
+    
+                // Faz o modal desaparecer após 6 segundos
+                setTimeout(() => {
+                    $('#overlay, #installModal').fadeOut(); // Oculta o modal
+                }, 6000);
+            });
+    
+            // Ação do botão "Instalar"
+            $('#confirmInstall').on('click', function () {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt(); // Exibe o prompt nativo de instalação
+    
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('Usuário aceitou a instalação');
+                        } else {
+                            console.log('Usuário rejeitou a instalação');
+                        }
+                        deferredPrompt = null; // Limpa a variável
+                        $('#overlay, #installModal').fadeOut(); // Oculta o modal
+                    });
+                }
+            });
+    
+            // Ação do botão "Cancelar"
+            $('#cancelInstall').on('click', function () {
+                console.log('Usuário cancelou a instalação');
+                $('#overlay, #installModal').fadeOut(); // Oculta o modal
+            });
+        });
+    
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('Evento beforeinstallprompt capturado!'); // Teste
+            e.preventDefault();
+        });
+    </script>
+</body>
+
+   
+
+
+</html>
